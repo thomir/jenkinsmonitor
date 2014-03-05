@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"github.com/niemeyer/qml"
-	"os"
-	"log"
-	"strings"
-	"strconv"
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"github.com/niemeyer/qml"
 	"image/color"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func run() error {
 	engine := qml.NewEngine()
 	servers := &Servers{}
 	engine.Context().SetVar("servers", servers)
-	component, err := engine.LoadFile("delegate.qml")
+	component, err := engine.LoadFile("jenkinsmonitor.qml")
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func run() error {
 /// Servers: A model for all the servers.
 type Servers struct {
 	List []*Server
-	Len int
+	Len  int
 }
 
 func (servers *Servers) Add(svr *Server) {
@@ -56,12 +56,12 @@ func (servers *Servers) Server(index int) *Server {
 /// Server - an object representing a single jenkins server.
 type Server struct {
 	Address string
-	Port int
-	Jobs Jobs
+	Port    int
+	Jobs    Jobs
 }
 
 func (server *Server) GetJobDetails() {
-	full_url := strings.TrimSuffix(server.Address, "/");
+	full_url := strings.TrimSuffix(server.Address, "/")
 	if server.Port != 80 && server.Port != 0 {
 		full_url += ":" + strconv.Itoa(server.Port)
 	}
@@ -76,7 +76,7 @@ func (server *Server) GetJobDetails() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	// decode json data into ServerData
 	type ServerData struct {
 		Jobs []Job
@@ -87,8 +87,8 @@ func (server *Server) GetJobDetails() {
 		log.Fatal(err)
 	}
 	// add found jobs to server model
-	for i:= 0; i < len(s.Jobs); i++ {
-		// TODO: Why does adding 'go' here make this faster? surely I'm already 
+	for i := 0; i < len(s.Jobs); i++ {
+		// TODO: Why does adding 'go' here make this faster? surely I'm already
 		// asynchronous?
 		go server.Jobs.Add(s.Jobs[i])
 	}
@@ -96,7 +96,7 @@ func (server *Server) GetJobDetails() {
 
 type Jobs struct {
 	list []Job
-	Len int
+	Len  int
 }
 
 func (jobs *Jobs) Add(job Job) {
@@ -112,19 +112,19 @@ func (jobs *Jobs) Job(index int) Job {
 }
 
 type Job struct {
-	Name string
-	Url string
+	Name  string
+	Url   string
 	Color string
 }
 
-func (job Job)RenderColor() color.RGBA {
+func (job Job) RenderColor() color.RGBA {
 	switch string(job.Color) {
 	case "blue":
-		return color.RGBA{108, 166, 210, 128 }
+		return color.RGBA{108, 166, 210, 128}
 	case "red":
-		return color.RGBA{195, 0, 3, 128 }
+		return color.RGBA{195, 0, 3, 128}
 	case "yellow":
-		return color.RGBA{223, 195, 0, 128 }
+		return color.RGBA{223, 195, 0, 128}
 	}
-	return color.RGBA{128, 128, 128, 128 }
+	return color.RGBA{128, 128, 128, 128}
 }
